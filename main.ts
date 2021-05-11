@@ -13,6 +13,7 @@ namespace StatusBarKind {
 sprites.onOverlap(SpriteKind.MovingRocket, SpriteKind.ShootShoot, function (sprite, otherSprite) {
     sprite.destroy()
     otherSprite.destroy(effects.fire, 25)
+    DebugLog("(Player) Player Shot Rocket", "Lvl1")
 })
 function End_Game () {
     Health_Bar.setBarSize(0, 0)
@@ -76,6 +77,7 @@ function Scene_2 () {
         . . . . . . . . . . . . . . . . 
         . . . . . . . . . . . . . . . . 
         `)
+    DebugLog("(Game) Activating Scene 2", "Lvl2")
 }
 // Pipe-Setup
 function PipeSetup () {
@@ -121,10 +123,26 @@ function PipeSetup () {
     PipeText = textsprite.create("Try going through", 2, 15)
     PipeText.setPosition(376, 20)
     game.setDialogTextColor(0)
-    DebugLog("(Startup) Pipe System Successfully Setup")
+    DebugLog("(Startup) Pipe System Successfully Setup", "Lvl3")
 }
-function DebugLog (Log: string) {
-    console.log(Log)
+function DebugLog (DebugText: string, DebugLevel: string) {
+    DebugLvl = "Lvl2"
+    if (DebugLvl == "Lvl1") {
+        console.log(DebugText)
+    }
+    if (DebugLvl == "Lvl2") {
+        if (DebugLevel == "Lvl3") {
+            console.log(DebugText)
+        }
+        if (DebugLevel == "Lvl2") {
+            console.log(DebugText)
+        }
+    }
+    if (DebugLvl == "Lvl3") {
+        if (DebugLevel == "Lvl3") {
+            console.log(DebugText)
+        }
+    }
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (MarioDirection == 0) {
@@ -162,7 +180,7 @@ function Health_Setup () {
     Health_Bar.setOffsetPadding(0, 1)
     Health_Bar.max = 120
     Health_Bar.value = 120
-    DebugLog("(Startup) Health System Successfully Setup")
+    DebugLog("(Startup) Health System Successfully Setup", "Lvl3")
 }
 // Mario Left
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -179,6 +197,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe, function (sprite, otherSpr
     pause(100)
     if (controller.down.isPressed()) {
         Scene_2()
+        DebugLog("(Game) Player Took Pipe To Scene 2", "Lvl1.5")
     }
 })
 function StartupScene () {
@@ -189,12 +208,12 @@ function StartupScene () {
 scene.onOverlapTile(SpriteKind.ShootShoot, sprites.dungeon.chestClosed, function (sprite, location) {
     scene.cameraShake(4, 500)
     tiles.setTileAt(tiles.getTileLocation(tiles.locationXY(location, tiles.XY.column), tiles.locationXY(location, tiles.XY.row)), assets.tile`transparency16`)
-    DebugLog("Chest Destroyed")
+    DebugLog("(Game) Chest Destroyed", "Lvl1")
     sprite.destroy()
     Score__Display += 100
     timer.debounce("action", 500, function () {
         tiles.setTileAt(tiles.getTileLocation(tiles.locationXY(location, tiles.XY.column), tiles.locationXY(location, tiles.XY.row)), sprites.dungeon.chestClosed)
-        DebugLog("Chest Respawned")
+        DebugLog("(Game) Chest Respawned", "Lvl1")
     })
 })
 statusbars.onZero(StatusBarKind.Health, function (status) {
@@ -223,24 +242,26 @@ function Startup () {
     RocketShooterr()
     Health_Setup()
     Player_1__Stats()
+    DebugLog("(Startup) Startup Functions Called", "Lvl3")
 }
 // Pipe Go down Scene 1
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe1b, function (sprite, otherSprite) {
     pause(100)
     if (controller.down.isPressed()) {
         Scene_1()
+        DebugLog("(Game) Player Took Pipe To Scene 1", "Lvl1.5")
     }
 })
 sprites.onOverlap(SpriteKind.MovingRocket, SpriteKind.Player, function (sprite, otherSprite) {
     Health_Bar.value += -40
     blockSettings.writeNumber("Player1 Health", Health_Bar.value)
-    DebugLog("Player Took Damage From Rocket:")
+    DebugLog("(Player) Player Lost Life To Rocket", "Lvl2")
     sprite.destroy()
 })
 function RocketShooterr () {
     RocketShoooooter = sprites.create(assets.tile`HorribleRocketsHOOTER`, SpriteKind.RocketShooter)
     tiles.placeOnRandomTile(RocketShoooooter, assets.tile`HorribleRocketsHOOTER`)
-    DebugLog("(Game) Rocket Shooter Sprite Placed")
+    DebugLog("(Game) Rocket Shooter Sprite Placed", "Lvl2")
 }
 // Scene 1
 function Scene_1 () {
@@ -288,6 +309,7 @@ function Scene_1 () {
         . . . f 4 4 4 4 4 4 4 4 f . . . 
         . . . f f f f f f f f f f . . . 
         `)
+    DebugLog("(Game) Activating Scene 1", "Lvl2")
 }
 function Player_1__Stats () {
     if (0 >= blockSettings.readNumber("Player1 Health")) {
@@ -299,7 +321,7 @@ function Player_1__Stats () {
     if (blockSettings.readString("PipeText") == "Disabled") {
         PipeText.destroy()
     }
-    DebugLog("(Startup) Saved Stats Loaded")
+    DebugLog("(Startup) Saved Stats Loaded", "Lvl3")
 }
 function Points__Gui () {
     pOINTSgUI = sprites.create(img`
@@ -705,6 +727,7 @@ function PipeGui () {
     PipeText.destroy()
     blockSettings.writeString("PipeText", "Disabled")
     Health_Bar.setBarSize(120, 4)
+    DebugLog("(Game) Playing Pipe Animation", "Lvl2")
 }
 let Rocketttttttt: Sprite = null
 let PipeGuii: Sprite = null
@@ -712,6 +735,7 @@ let pOINTSgUI: Sprite = null
 let dartleft: Sprite = null
 let rightdart: Sprite = null
 let MarioDirection = 0
+let DebugLvl = ""
 let PipeText: Sprite = null
 let RocketShoooooter: Sprite = null
 let Pipe1b2: Sprite = null
@@ -740,6 +764,6 @@ forever(function () {
     if (Score__Display == 1000) {
         Score__Display = 0
         Health_Bar.value = 120
-        DebugLog("Score Equals 1000 Health Reset")
+        DebugLog("(Player) Player's Score Reached 1000 Life Reset", "Lvl2")
     }
 })

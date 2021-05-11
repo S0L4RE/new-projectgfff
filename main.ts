@@ -121,9 +121,10 @@ function PipeSetup () {
     PipeText = textsprite.create("Try going through", 2, 15)
     PipeText.setPosition(376, 20)
     game.setDialogTextColor(0)
+    DebugLog("(Startup) Pipe System Successfully Setup")
 }
-function DebugLog (Log: string, Number2: number) {
-    console.logValue(Log, Number2)
+function DebugLog (Log: string) {
+    console.log(Log)
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (MarioDirection == 0) {
@@ -161,6 +162,7 @@ function Health_Setup () {
     Health_Bar.setOffsetPadding(0, 1)
     Health_Bar.max = 120
     Health_Bar.value = 120
+    DebugLog("(Startup) Health System Successfully Setup")
 }
 // Mario Left
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -187,12 +189,12 @@ function StartupScene () {
 scene.onOverlapTile(SpriteKind.ShootShoot, sprites.dungeon.chestClosed, function (sprite, location) {
     scene.cameraShake(4, 500)
     tiles.setTileAt(tiles.getTileLocation(tiles.locationXY(location, tiles.XY.column), tiles.locationXY(location, tiles.XY.row)), assets.tile`transparency16`)
-    DebugLog("Chest Destroyed", 0)
+    DebugLog("Chest Destroyed")
     sprite.destroy()
     Score__Display += 100
     timer.debounce("action", 500, function () {
         tiles.setTileAt(tiles.getTileLocation(tiles.locationXY(location, tiles.XY.column), tiles.locationXY(location, tiles.XY.row)), sprites.dungeon.chestClosed)
-        DebugLog("Chest Respawned", 0)
+        DebugLog("Chest Respawned")
     })
 })
 statusbars.onZero(StatusBarKind.Health, function (status) {
@@ -232,12 +234,13 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe1b, function (sprite, otherS
 sprites.onOverlap(SpriteKind.MovingRocket, SpriteKind.Player, function (sprite, otherSprite) {
     Health_Bar.value += -40
     blockSettings.writeNumber("Player1 Health", Health_Bar.value)
-    DebugLog("Player Took Damage From Rocket:", -40)
+    DebugLog("Player Took Damage From Rocket:")
     sprite.destroy()
 })
 function RocketShooterr () {
     RocketShoooooter = sprites.create(assets.tile`HorribleRocketsHOOTER`, SpriteKind.RocketShooter)
     tiles.placeOnRandomTile(RocketShoooooter, assets.tile`HorribleRocketsHOOTER`)
+    DebugLog("(Game) Rocket Shooter Sprite Placed")
 }
 // Scene 1
 function Scene_1 () {
@@ -296,6 +299,7 @@ function Player_1__Stats () {
     if (blockSettings.readString("PipeText") == "Disabled") {
         PipeText.destroy()
     }
+    DebugLog("(Startup) Saved Stats Loaded")
 }
 function Points__Gui () {
     pOINTSgUI = sprites.create(img`
@@ -736,6 +740,6 @@ forever(function () {
     if (Score__Display == 1000) {
         Score__Display = 0
         Health_Bar.value = 120
-        DebugLog("Score Equals 1000 Health Set To:", Health_Bar.value)
+        DebugLog("Score Equals 1000 Health Reset")
     }
 })

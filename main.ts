@@ -9,13 +9,19 @@ namespace SpriteKind {
 namespace StatusBarKind {
     export const Points = StatusBarKind.create()
 }
-/**
- * WTF
- */
+// WTF
 sprites.onOverlap(SpriteKind.MovingRocket, SpriteKind.ShootShoot, function (sprite, otherSprite) {
     sprite.destroy()
     otherSprite.destroy(effects.fire, 25)
 })
+function End_Game () {
+    Health_Bar.setBarSize(0, 0)
+    blockSettings.writeNumber("Player1 Health", Health_Bar.value)
+    blockSettings.writeNumber("Player1 Score", Score__Display)
+    info.setScore(Score__Display)
+    pause(100)
+    game.over(false, effects.blizzard)
+}
 // Mario Jump
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Mario.vy == 0) {
@@ -116,29 +122,8 @@ function PipeSetup () {
     PipeText.setPosition(376, 20)
     game.setDialogTextColor(0)
 }
-function Points__Gui () {
-    pOINTSgUI = sprites.create(img`
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        . . . . . . . . . . . . . . . . 
-        `, SpriteKind.Player)
-    pOINTSgUI = textsprite.create("Testing")
-    tiles.placeOnTile(pOINTSgUI, tiles.getTileLocation(18, 2))
-    pOINTSgUI.setPosition(129, 37)
-    pOINTSgUI.setStayInScreen(true)
+function DebugLog (Log: string, Number2: number) {
+    console.logValue(Log, Number2)
 }
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (MarioDirection == 0) {
@@ -167,6 +152,16 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         dartleft.setKind(SpriteKind.ShootShoot)
     }
 })
+function Health_Setup () {
+    Health_Bar = statusbars.create(120, 4, StatusBarKind.Health)
+    Health_Bar.setColor(7, 2)
+    Health_Bar.setBarBorder(1, 15)
+    Health_Bar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
+    Health_Bar.positionDirection(CollisionDirection.Bottom)
+    Health_Bar.setOffsetPadding(0, 1)
+    Health_Bar.max = 120
+    Health_Bar.value = 120
+}
 // Mario Left
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     animation.runImageAnimation(
@@ -184,14 +179,20 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe, function (sprite, otherSpr
         Scene_2()
     }
 })
+function StartupScene () {
+    tiles.setTilemap(tilemap`level0`)
+    scene.setBackgroundColor(6)
+}
 // Mario SHoot W.I.P
 scene.onOverlapTile(SpriteKind.ShootShoot, sprites.dungeon.chestClosed, function (sprite, location) {
     scene.cameraShake(4, 500)
     tiles.setTileAt(tiles.getTileLocation(tiles.locationXY(location, tiles.XY.column), tiles.locationXY(location, tiles.XY.row)), assets.tile`transparency16`)
+    DebugLog("Chest Destroyed", 0)
     sprite.destroy()
     Score__Display += 100
     timer.debounce("action", 500, function () {
         tiles.setTileAt(tiles.getTileLocation(tiles.locationXY(location, tiles.XY.column), tiles.locationXY(location, tiles.XY.row)), sprites.dungeon.chestClosed)
+        DebugLog("Chest Respawned", 0)
     })
 })
 statusbars.onZero(StatusBarKind.Health, function (status) {
@@ -208,16 +209,6 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     MarioDirection = 0
     music.footstep.play()
 })
-function Health_Setup () {
-    Health_Bar = statusbars.create(120, 4, StatusBarKind.Health)
-    Health_Bar.setColor(7, 2)
-    Health_Bar.setBarBorder(1, 15)
-    Health_Bar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
-    Health_Bar.positionDirection(CollisionDirection.Bottom)
-    Health_Bar.setOffsetPadding(0, 1)
-    Health_Bar.max = 120
-    Health_Bar.value = 120
-}
 // Startup
 function Startup () {
     Scene = "Scene 1"
@@ -229,6 +220,7 @@ function Startup () {
     PipeSetup()
     RocketShooterr()
     Health_Setup()
+    Player_1__Stats()
 }
 // Pipe Go down Scene 1
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe1b, function (sprite, otherSprite) {
@@ -239,6 +231,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe1b, function (sprite, otherS
 })
 sprites.onOverlap(SpriteKind.MovingRocket, SpriteKind.Player, function (sprite, otherSprite) {
     Health_Bar.value += -40
+    blockSettings.writeNumber("Player1 Health", Health_Bar.value)
+    DebugLog("Player Took Damage From Rocket:", -40)
     sprite.destroy()
 })
 function RocketShooterr () {
@@ -292,11 +286,40 @@ function Scene_1 () {
         . . . f f f f f f f f f f . . . 
         `)
 }
-function End_Game () {
-    Health_Bar.setBarSize(0, 0)
-    info.setScore(Score__Display)
-    pause(100)
-    game.over(true, effects.blizzard)
+function Player_1__Stats () {
+    if (0 >= blockSettings.readNumber("Player1 Health")) {
+        Health_Bar.value = 120
+        blockSettings.writeNumber("Player1 Health", 120)
+    } else {
+        Health_Bar.value = blockSettings.readNumber("Player1 Health")
+    }
+    if (blockSettings.readString("PipeText") == "Disabled") {
+        PipeText.destroy()
+    }
+}
+function Points__Gui () {
+    pOINTSgUI = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Player)
+    pOINTSgUI = textsprite.create("Testing")
+    tiles.placeOnTile(pOINTSgUI, tiles.getTileLocation(18, 2))
+    pOINTSgUI.setPosition(129, 37)
+    pOINTSgUI.setStayInScreen(true)
 }
 // Pipe Animation (GUI)
 function PipeGui () {
@@ -676,26 +699,23 @@ function PipeGui () {
     scene.cameraFollowSprite(Mario)
     PipeGuii.destroy()
     PipeText.destroy()
+    blockSettings.writeString("PipeText", "Disabled")
     Health_Bar.setBarSize(120, 4)
-}
-function StartupScene () {
-    tiles.setTilemap(tilemap`level0`)
-    scene.setBackgroundColor(6)
 }
 let Rocketttttttt: Sprite = null
 let PipeGuii: Sprite = null
-let Health_Bar: StatusBarSprite = null
-let Score__Display = 0
+let pOINTSgUI: Sprite = null
 let dartleft: Sprite = null
 let rightdart: Sprite = null
 let MarioDirection = 0
-let pOINTSgUI: Sprite = null
-let PipeText: TextSprite = null
+let PipeText: Sprite = null
 let RocketShoooooter: Sprite = null
 let Pipe1b2: Sprite = null
 let Pipe1: Sprite = null
 let Scene = ""
 let Mario: Sprite = null
+let Score__Display = 0
+let Health_Bar: StatusBarSprite = null
 Startup()
 // Mario Move Animation Reset
 game.onUpdateInterval(10, function () {
@@ -716,5 +736,6 @@ forever(function () {
     if (Score__Display == 1000) {
         Score__Display = 0
         Health_Bar.value = 120
+        DebugLog("Score Equals 1000 Health Set To:", Health_Bar.value)
     }
 })

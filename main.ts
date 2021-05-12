@@ -879,16 +879,35 @@ function PipeSetup () {
     game.setDialogTextColor(0)
     DebugLog("(Startup) Pipe System Successfully Setup", "Lvl3")
 }
+function Gui_Active (Active: number) {
+    if (Active == 1) {
+        DebugLog("(GUI) A Gui Is Active", "Lvl2")
+        controller.moveSprite(Mario, 0, 0)
+        Mario.ay = 0
+        Health_Bar.setBarSize(0, 0)
+        Health_Bar.setStatusBarFlag(StatusBarFlag.IgnoreValueEvents, true)
+    }
+    if (Active == 0) {
+        controller.moveSprite(Mario, 100, 0)
+        Mario.ay = 400
+        scene.cameraFollowSprite(Mario)
+        Health_Bar.setBarSize(120, 4)
+        Health_Bar.setStatusBarFlag(StatusBarFlag.IgnoreValueEvents, false)
+        DebugLog("(GUI) Gui disactive", "Lvl2")
+    }
+}
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Menu_Enabled == 1) {
         if (MenuScreen == 1.1) {
             Menu_Gui2.destroy()
+            Gui_Active(0)
             pause(10)
             MenuScreen = 1.1
             Menu_Enabled = 0
             scene.cameraFollowSprite(Mario)
         } else if (MenuScreen == 2) {
             Menu_Gui2.destroy()
+            Gui_Active(0)
             pause(10)
             MenuScreen = 1.1
             Menu_Enabled = 0
@@ -1080,6 +1099,16 @@ function Health_Setup () {
     Health_Bar.value = 120
     DebugLog("(Startup) Health System Successfully Setup", "Lvl3")
 }
+// Mario Left
+controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+    animation.runImageAnimation(
+    Mario,
+    assets.animation`Mario-Walk-Left`,
+    100,
+    true
+    )
+    MarioDirection = 1
+})
 function Menu_Gui (Current_Scene: string) {
     Menu_Enabled = 1
     MenuScreen = 1.1
@@ -1226,16 +1255,6 @@ function Menu_Gui (Current_Scene: string) {
         `)
     Menu_Gui2.z = 100
 }
-// Mario Left
-controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
-    animation.runImageAnimation(
-    Mario,
-    assets.animation`Mario-Walk-Left`,
-    100,
-    true
-    )
-    MarioDirection = 1
-})
 // Pipe GO Down to Scene 2
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe, function (sprite, otherSprite) {
     pause(100)
@@ -1260,6 +1279,10 @@ scene.onOverlapTile(SpriteKind.ShootShoot, sprites.dungeon.chestClosed, function
         DebugLog("(Game) Chest Respawned", "Lvl1")
     })
 })
+function Starting_Screen () {
+    blockMenu.showMenu(["Play", "Load", "Settings"], MenuStyle.List, MenuLocation.FullScreen)
+    blockMenu.setSelectedIndex(3)
+}
 statusbars.onZero(StatusBarKind.Health, function (status) {
     End_Game()
 })
@@ -1287,6 +1310,7 @@ function Startup () {
     Health_Setup()
     Player_1__Stats()
     DebugLog("(Startup) Startup Functions Called", "Lvl3")
+    Starting_Screen()
 }
 // Pipe Go down Scene 1
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Pipe1b, function (sprite, otherSprite) {
@@ -1555,6 +1579,7 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 controller.menu.onEvent(ControllerButtonEvent.Pressed, function () {
     Menu_Gui("Placeholder")
+    Gui_Active(1)
 })
 sprites.onOverlap(SpriteKind.MovingRocket, SpriteKind.Player, function (sprite, otherSprite) {
     Health_Bar.value += -40
